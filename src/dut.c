@@ -73,11 +73,12 @@ int wait_for_ack()
     }
 }
 
-int wait_for_test_packet(uint32_t address, char *timed_out, uint8_t *rssi_sample)
+int wait_for_test_packet(uint32_t address, char *timed_out, uint8_t *rssi_sample, int *time)
 {
     uint8_t rx_packet[256];
     *rssi_sample = 255;
     *timed_out = 0;
+    *time = -1;
     NRF_RADIO->PACKETPTR = (uint32_t)&rx_packet[0];
     set_address(address, 4);
     setup_mode(RADIOMODE, AA_SIZE);
@@ -98,6 +99,8 @@ int wait_for_test_packet(uint32_t address, char *timed_out, uint8_t *rssi_sample
           return 0;
       }
     }
+    capture_timer(0);
+    *time = get_timer_val(0);
     NRF_RADIO->EVENTS_RSSIEND = 0;
     NRF_RADIO->TASKS_RSSISTART = 1;
     while (NRF_RADIO->EVENTS_RSSIEND == 0){
@@ -139,10 +142,13 @@ int main()
     nrf_delay_ms(1000);
     //for(int i=0;i<100;i++){
     uint32_t address;
+    int time;
     char timed_out;
     uint8_t rssi_sample;
     uint8_t max_rssi;
     uint8_t min_rssi;
+    int max_time;
+    int min_time;
     address = 0x12943377;
     while(1){
         int ret;
@@ -152,13 +158,15 @@ int main()
         naer = 0;
         max_rssi = 0;
         min_rssi = 255;
+        max_time = 0;
+        min_time = 65536;
         for(int i=0;i<100;i++){
             ret = 0;
             while(ret == 0){
                 send_next_address(address, 0);
                 ret = wait_for_ack();
             }
-            ret = wait_for_test_packet(address, &timed_out, &rssi_sample);
+            ret = wait_for_test_packet(address, &timed_out, &rssi_sample, &time);
             if (rssi_sample != 255) {
                 if (rssi_sample > max_rssi)
                     max_rssi = rssi_sample;
@@ -174,6 +182,13 @@ int main()
                 //printf_uart("One failing: %08x\r\n", address);
                 errors++;
             }
+            if (time != -1){
+                if (time > max_time){
+                    max_time = time;
+                }
+                if (time < min_time)
+                    min_time = time;
+            }
             nrf_delay_ms(1);
         }
         printf_uart("%08x", address);
@@ -183,6 +198,8 @@ int main()
         printf_uart("%3d/100", naer);
         printf_uart(", ");
         printf_uart("RSSI: %03d < %03d",-(int)(max_rssi), -(int)(min_rssi));
+        printf_uart(", ");
+        printf_uart("Time: %03d < %03d",min_time, max_time);
         printf_uart("\r\n");
         address++;
     }

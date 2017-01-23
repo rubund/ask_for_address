@@ -176,7 +176,14 @@ int main()
             }
             nrf_delay_ms(1);
         }
-        printf_uart("%08x: %3d/100,  %3d/100,  RSSI: %03d < %03d\r\n",address, errors, naer, -(int)(max_rssi), -(int)(min_rssi));
+        printf_uart("%08x", address);
+        printf_uart(": ");
+        printf_uart("%3d/100", errors);
+        printf_uart(", ");
+        printf_uart("%3d/100", naer);
+        printf_uart(", ");
+        printf_uart("RSSI: %03d < %03d",-(int)(max_rssi), -(int)(min_rssi));
+        printf_uart("\r\n");
         address++;
     }
 }

@@ -147,9 +147,9 @@ int main()
     while(1){
         int ret;
         int errors;
-        int aer;
+        int naer;
         errors = 0;
-        aer = 0;
+        naer = 0;
         max_rssi = 0;
         min_rssi = 255;
         for(int i=0;i<100;i++){
@@ -165,8 +165,8 @@ int main()
                 if (rssi_sample < min_rssi)
                     min_rssi = rssi_sample;
             }
-            if (timed_out)
-                aer++;
+            if ((!ret) && (!timed_out))
+                naer++;
             if (ret){
                 //printf_uart("One successful: %08x\r\n", address);
             }
@@ -176,7 +176,7 @@ int main()
             }
             nrf_delay_ms(1);
         }
-        printf_uart("%08x: %3d/100,  %3d/100,  RSSI: %03d < %03d\r\n",address, errors, aer, -(int)(max_rssi), -(int)(min_rssi));
+        printf_uart("%08x: %3d/100,  %3d/100,  RSSI: %03d < %03d\r\n",address, errors, naer, -(int)(max_rssi), -(int)(min_rssi));
         address++;
     }
 }

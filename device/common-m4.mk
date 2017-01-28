@@ -18,5 +18,3 @@ LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
 LDFLAGS += --specs=nano.specs -lc -lnosys
 
-ASMFLAGS += -x assembler-with-cpp
-

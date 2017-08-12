@@ -21,9 +21,13 @@ include ../common.mk
 CFLAGS ?=
 CFLAGS += -DNRF52
 CFLAGS += -DHAS_UARTE
+CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 ASMFLAGS ?=
 ASMFLAGS += -DNRF52
+
+LDFLAGS ?=
+LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 C_SOURCE_FILES += \
 ../../src/shared.c \
